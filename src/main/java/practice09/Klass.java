@@ -40,4 +40,8 @@ public class Klass {
     public void appendMember(Student student) {
         students.add(student);
     }
+
+    public boolean isIn(Student student) {
+        return student.getKlass().getNumber() == this.getNumber();
+    }
 }

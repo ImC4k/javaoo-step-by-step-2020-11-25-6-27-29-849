@@ -48,7 +48,7 @@ public class Teacher extends Person {
     public boolean isTeaching(Student student) {
         return !klasses.stream()
                 .filter(klass ->
-                        klass.getNumber().equals(student.getKlass().getNumber()))
+                        klass.isIn(student))
                 .collect(Collectors.toList())
                 .isEmpty();
     }
