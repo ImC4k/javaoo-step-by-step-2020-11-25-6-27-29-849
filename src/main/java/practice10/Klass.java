@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Klass {
-    private Integer number;
+    private final Integer number;
     private Student leader;
-    private List<Student> students = new ArrayList<>();
+    private final List<Student> students = new ArrayList<>();
 
-    private Teacher teacher = null;
+    private final List<KlassNewJoinObserver> newJoinObservers = new ArrayList<>();
+    private final List<KlassNewLeaderObserver> newLeaderObservers = new ArrayList<>();
 
     public Klass(Integer number) {
         this.number = number;
@@ -16,10 +17,6 @@ public class Klass {
 
     public Integer getNumber() {
         return number;
-    }
-
-    public void setNumber(Integer number) {
-        this.number = number;
     }
 
     public Student getLeader() {
@@ -32,28 +29,36 @@ public class Klass {
         }
         else {
             this.leader = newLeader;
-            if (teacher != null) {
-                teacher.handleClassLeaderChange(this, newLeader);
-            }
+            notifyNewLeader(newLeader);
         }
+    }
+
+    private void notifyNewLeader(Student newLeader) {
+        newLeaderObservers.forEach(klassNewLeaderObserver -> klassNewLeaderObserver.updateOnNewLeader(newLeader, this));
+    }
+
+    public void appendMember(Student newStudent) {
+        students.add(newStudent);
+        notifyNewJoiner(newStudent);
+    }
+
+    private void notifyNewJoiner(Student newStudent) {
+        newJoinObservers.forEach(newJoinObserver -> newJoinObserver.updateOnNewJoin(newStudent, this));
     }
 
     public String getDisplayName() {
         return String.format("Class %d", number);
     }
 
-    public void appendMember(Student newStudent) {
-        students.add(newStudent);
-        if (teacher != null) {
-            teacher.handleNewStudentJoiningClass(this, newStudent);
-        }
-    }
-
     public boolean isIn(Student student) {
-        return student.getKlass().getNumber() == this.number;
+        return student.getKlass().getNumber().equals(this.number);
     }
 
-    public void assignTeacher(Teacher teacher) {
-        this.teacher = teacher;
+    public void attachNewJoinObserver(KlassNewJoinObserver observer) {
+        this.newJoinObservers.add(observer);
+    }
+
+    public void attachNewLeaderObserver(KlassNewLeaderObserver observer) {
+        this.newLeaderObservers.add(observer);
     }
 }

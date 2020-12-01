@@ -3,7 +3,7 @@ package practice10;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Teacher extends Person {
+public class Teacher extends Person implements KlassNewLeaderObserver, KlassNewJoinObserver {
     private List<Klass> klasses;
 
     public Teacher(int id, String name, int age) {
@@ -13,7 +13,10 @@ public class Teacher extends Person {
     public Teacher(int id, String name, int age, List<Klass> klasses) {
         super(id, name, age);
         this.klasses = klasses;
-        klasses.forEach(klass -> klass.assignTeacher(this));
+        klasses.forEach(klass -> {
+            klass.attachNewJoinObserver(this);
+            klass.attachNewLeaderObserver(this);
+        });
     }
 
     public List<Klass> getClasses() {
@@ -42,18 +45,18 @@ public class Teacher extends Person {
     }
 
     public boolean isTeaching(Student student) {
-        return !klasses.stream()
+        return (klasses.stream()
                 .filter(klass ->
-                        klass.isIn(student))
-                .collect(Collectors.toList())
-                .isEmpty();
+                        klass.isIn(student)).count() != 0);
     }
 
-    public void handleNewStudentJoiningClass(Klass klass, Student student) {
+    @Override
+    public void updateOnNewJoin(Student student, Klass klass) {
         System.out.print(String.format("I am %s. I know %s has joined %s.\n", this.getName(), student.getName(), klass.getDisplayName()));
     }
-    
-    public void handleClassLeaderChange(Klass klass, Student student) {
+
+    @Override
+    public void updateOnNewLeader(Student student, Klass klass) {
         System.out.print(String.format("I am %s. I know %s become Leader of %s.\n", this.getName(), student.getName(), klass.getDisplayName()));
     }
 }
